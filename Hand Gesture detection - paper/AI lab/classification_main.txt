@@ -1,0 +1,153 @@
+# -*- coding: utf-8 -*-
+
+#Spyder Editor
+
+#This is a temporary script file.
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn import datasets
+from sklearn import model_selection, preprocessing
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.neural_network import MLPClassifier
+
+#from pandas import DataFrame
+
+filename = 'user_10_loc.csv'
+
+names =['top_left_x', 'top_left_y', 'bottom_right_x', 'bottom_right_y', 'image']
+dt = pd.read_csv(filename, names=names)
+df = pd.DataFrame(dt, columns=names)
+
+print("\ndata shape ",dt.shape)
+print(dt.head(20))
+print(dt.describe())
+print(dt.groupby('image').size())
+plt.style.use('default')
+plt.figure()
+dt.boxplot()
+dt.hist()
+
+array= dt.values
+
+
+x = array[:, 0:4]
+y =array[:, -1:]
+
+
+train_x, test_x, train_y, test_y = model_selection.train_test_split(x,y, test_size=0.2)
+
+print(train_x, test_x, train_y, test_y)
+
+print(train_x.shape, test_x.shape, train_y.shape, test_y.shape)
+
+train_y=train_y.reshape(train_y.shape[0])
+test_y=test_y.reshape(test_y.shape[0])
+
+models = []
+models.append(('SVM', SVC()))
+models.append(('RF', RandomForestClassifier()))
+models.append(('KNN', KNeighborsClassifier()))
+models.append(('AB', AdaBoostClassifier()))
+models.append(('NB', GaussianNB()))
+models.append(('NNET',MLPClassifier()))
+#models.append(('LR',linear_model.LinearRegression()))
+
+
+name = []
+results = []
+
+for n, model in models:
+    kfold = model_selection.KFold(n_splits=10, random_state=7)
+    cv_results = model_selection.cross_val_score(model, train_x, train_y, cv=kfold, scoring='accuracy')
+    results.append(cv_results)
+    name.append(n)
+    #plt.plot(cv_results)
+    #plt.show()
+    msg = "%s: %f (%f)" %(n, cv_results.mean(), cv_results.std())
+    print(msg)
+    #print("\n")
+
+
+# Compare Algorithms
+fig = plt.figure()
+fig.suptitle('Algorithm Comparison')
+ax = fig.add_subplot(111)
+plt.boxplot(results)
+ax.set_xticklabels(name)
+plt.show()
+
+# Make predictions on validation dataset
+knn = KNeighborsClassifier()
+knn.fit(train_x, train_y)
+predictions = knn.predict(test_x)
+print("\nKNNprediction")
+print("\nPredictions: ",predictions)
+print("\naccuracy score ",accuracy_score(test_y, predictions))
+print("\nconfusion_matrix",confusion_matrix(test_y, predictions))
+print("\nclassification_report",classification_report(test_y, predictions))
+
+Svm = SVC()
+Svm.fit(train_x, train_y)
+predictions = Svm.predict(test_x)
+print("\nSVMprediction")
+print("\nPredictions: ",predictions)
+print("\naccuracy score ",accuracy_score(test_y, predictions))
+print("\nconfusion_matrix",confusion_matrix(test_y, predictions))
+print("\nclassification_report",classification_report(test_y, predictions))
+
+
+random = RandomForestClassifier()
+random.fit(train_x, train_y)
+predictions = random.predict(test_x)
+print("\nRANDOMprediction")
+print("\nPredictions: ",predictions)
+print("\naccuracy score ",accuracy_score(test_y, predictions))
+print("\nconfusion_matrix",confusion_matrix(test_y, predictions))
+print("\nclassification_report",classification_report(test_y, predictions))
+
+ada = AdaBoostClassifier()
+ada.fit(train_x, train_y)
+predictions = ada.predict(test_x)
+print("\nADABOOSTprediction")
+print("\nPredictions: ",predictions)
+print("\naccuracy score ",accuracy_score(test_y, predictions))
+print("\nconfusion_matrix",confusion_matrix(test_y, predictions))
+print("\nclassification_report",classification_report(test_y, predictions))
+
+
+nnet = MLPClassifier()
+nnet.fit(train_x, train_y)
+predictions = nnet.predict(test_x)
+print("\nNNETprediction")
+print("\nPredictions: ",predictions)
+print("\naccuracy score ",accuracy_score(test_y, predictions))
+print("\nconfusion_matrix",confusion_matrix(test_y, predictions))
+print("\nclassification_report",classification_report(test_y, predictions))
+
+
+naive = GaussianNB()
+naive.fit(train_x, train_y)
+predictions = naive.predict(test_x)
+print("\nNAIVEprediction")
+print("\nPredictions: ",predictions)
+print("\naccuracy score ",accuracy_score(test_y, predictions))
+print("\nconfusion_matrix",confusion_matrix(test_y, predictions))
+print("\nclassification_report",classification_report(test_y, predictions))
+
+
+
+
+
+
+
